@@ -1,0 +1,32 @@
+* {
+    box-sizing: border-box;
+  }
+  
+  body {
+    height: 100vh;
+    margin: 0;
+    background-color: rgb(9, 88, 127);
+  }
+  .board-wrapper {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 0 0 50px;
+  
+}.board {
+    align-items: center;
+    box-shadow: 0 0 20px 0 rgba(124, 123, 123, 0.2);
+    display: flex;
+    flex-wrap: wrap;
+    height: 50%;
+    justify-content: left;
+    height: 450px;
+    width: 450px;
+ 
+}.board div {
+    border: 1px solid lightgrey;
+    flex-grow: 1;
+    height: 10%;
+    width: 10%;
+  }
