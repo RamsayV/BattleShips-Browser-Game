@@ -1,32 +1,100 @@
-* {
-    box-sizing: border-box;
-  }
+#gamesboard-container{
+  width: 500px;
+  display: flex;
+  justify-content: space-between;
+}
+
+
+
+.option-container {
+  width: 500px;
+  height: 60px;
+  margin: 30px 0;
+  background-color: yellow;
+  display: flex;
+  align-items: center;
+}
+
+/* Ships Creation */
+
+.destroyer {
+  background-color: brown;
+}
+.submarine{
+  background-color: green;
+}
+.cruiser{
+  background-color: purple;
+}
+.battleship{
+  background-color: orange;
+}
+.carrier{
+  background-color: blue;
+}
+
+.destroyer-preview{
+  width: 20px;
+  height: 10px;
+  margin: 3px;
+}
+
+.submarine-preview{
+  width: 30px;
+  height: 10px;
+  margin: 3px;
+}
+
+.cruiser-preview{
+  width: 30px;
+  height: 10px;
+  margin: 3px;
+}
+
+.battleship-preview{
+  width: 40px;
+  height: 10px;
+  margin: 3px;
+}
+
+.carrier-preview{
+  width: 50px;
+  height: 10px;
+  margin: 3px;
+}
+/* GRIDS FOR BS */
+
+.game-board {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-wrap: wrap;
   
-  body {
-    height: 100vh;
-    margin: 0;
-    background-color: rgb(9, 88, 127);
-  }
-  .board-wrapper {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0 0 0 50px;
-  
-}.board {
-    align-items: center;
-    box-shadow: 0 0 20px 0 rgba(124, 123, 123, 0.2);
-    display: flex;
-    flex-wrap: wrap;
-    height: 50%;
-    justify-content: left;
-    height: 450px;
-    width: 450px;
- 
-}.board div {
-    border: 1px solid lightgrey;
-    flex-grow: 1;
-    height: 10%;
-    width: 10%;
-  }
+}
+.block{
+  width: 20px;
+  height: 20px;
+  border: 1px solid black;
+  box-sizing: border-box;
+}
+.hover {
+ background-color: grey;
+
+}
+
+#computer .destroyer,
+#computer .submarine,
+#computer .cruiser,
+#computer .battleship,
+#computer .carrier {
+  background-color: pink;
+}
+
+.boom {
+ background-color: red !important;
+
+}
+.empty {
+ background-color: grey !important;
+
+}

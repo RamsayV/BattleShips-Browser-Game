@@ -1,167 +1,311 @@
- 
- //!PHASE 1
- //?step 1 Create Ship class and the Objects inside it
+const gamesBoardContainer = document.querySelector("#gamesboard-container");
+const optionContainer = document.querySelector(".option-container");
+const flipButton = document.querySelector("#flip-button");
+const startButton = document.querySelector("#start-button");
+const infoDisplay = document.querySelector("#info");
+const turnDisplay = document.querySelector("#turn-display");
+
+//Choosing ships
+let angle = 0;
+function flip() {
+  const optionShips = Array.from(optionContainer.children);
+  angle = angle === 0 ? 90 : 0;
+  optionShips.forEach(
+    (optionShip) => (optionShip.style.transform = `rotate(${angle}deg)`)
+  );
+}
+
+flipButton.addEventListener("click", flip);
+
+//Boards
+
+const width = 10;
+
+function createBoard(color, user) {
+  const gameBoardContainer = document.createElement("div");
+  gameBoardContainer.classList.add("game-board");
+  gameBoardContainer.style.backgroundColor = color;
+  gameBoardContainer.id = user;
+
+  for (let i = 0; i < width * width; i++) {
+    const block = document.createElement("div");
+    block.classList.add("block");
+    block.id = i;
+    gameBoardContainer.append(block);
+  }
+
+  gamesBoardContainer.append(gameBoardContainer);
+}
+createBoard("yellow", "player");
+createBoard("pink", "computer");
+
+// Ship
+
 class Ship {
-  constructor(length){
-  this.length= length
-  this.hits= 0
-  this.sunk= false
-}
-//? Step 2: Create the methods for recording hits and wether or not the ship has sunk
-  // Method to record a hit on the ship and if statement for seeing if the ship has sunk 
-  hit() {
-    this.hits++;
-    if (this.hits === this.length) {
-      this.sunk = true;
-    }
+  constructor(name, length) {
+    this.name = name;
+    this.length = length;
   }
 }
-//? Step 3: Create the variables of all 5 ships and assign them a length from the constructor
-const carrier = new Ship(5);
-const battleship = new Ship(4);
-const cruiser = new Ship(3);
-const submarine = new Ship(3);
-const destroyer = new Ship(2);
-console.log(cruiser)
 
+const destroyer = new Ship("destroyer", 2);
+const cruiser = new Ship("cruiser", 3);
+const submarine = new Ship("submarine", 3);
+const battleship = new Ship("battleship", 4);
+const carrier = new Ship("carrier", 5);
 
-// //!PHASE 2 (Similar steps as PHASE 1 but class is focused on the board)
-//?step 1 Create board class and the functions inside it
-class Gameboard {
-  constructor() {
-    this.grid = []; // gameboard grid
-    this.ships = []; // store the ships on the board
-    this.rows = 10; // Num of rows in board
-    this.cols = 10; // Num of columns in board
+const ships = [destroyer, cruiser, submarine, battleship, carrier];
+let notDropped;
 
-    //? step2 Initialize the grid with empty cells
-    for (let i = 0; i < this.rows; i++) {
-      this.grid[i] = Array(this.cols).fill(null);
-    }
-console.log(Gameboard)
-  }
+function getValidity(allBoardBlocks, isHorizontal, startIndex, ship) {
+  let validStart = isHorizontal ? startIndex <= width * width - ship.length ? startIndex: 
+  width * width - ship.length : 
+   startIndex <= width * width - width * ship.length ? startIndex : 
+   startIndex - ship.length * width + width;
 
-  //? step 3 Method to place a ship on the gameboard at specific coordinates
-  placeShip(ship, row, col, orientation) {
-    // Check if the placement is valid
-    if (row < 0 || col < 0 || row >= this.rows || col >= this.cols) {
-      throw new Error("Invalid placement coordinates.");
-    }
+  let shipBlocks = [];
 
-    // Check if the ship fits within the gameboard boundaries
-    if (orientation === "horizontal") {
-      if (col + ship.length > this.cols) {
-        throw new Error("Ship placement out of bounds.");
-      }
-    } else if (orientation === "vertical") {
-      if (row + ship.length > this.rows) {
-        throw new Error("Ship placement out of bounds.");
-      }
+  for (let i = 0; i < ship.length; i++) {
+    if (isHorizontal) {
+      shipBlocks.push(allBoardBlocks[Number(validStart) + i]);
     } else {
-      throw new Error("Invalid ship orientation.");
+      shipBlocks.push(allBoardBlocks[Number(validStart) + i * width]);
     }
-
-    // Check if the placement is not occupied by another ship
-    for (let i = 0; i < ship.length; i++) {
-      if (orientation === "horizontal") {
-        if (this.grid[row][col + i] !== null) {
-          throw new Error("Invalid ship placement.");
-        }
-      } else if (orientation === "vertical") {
-        if (this.grid[row + i][col] !== null) {
-          throw new Error("Invalid ship placement.");
-        }
-      }
-    }
-
-    // If all checks pass, place the ship on the grid
-    for (let i = 0; i < ship.length; i++) {
-      if (orientation === "horizontal") {
-        this.grid[row][col + i] = ship;
-      } else if (orientation === "vertical") {
-        this.grid[row + i][col] = ship;
-      }
-    }
-
-    // Store the ship in the list of ships on the gameboard
-    this.ships.push(ship);
   }
-  receiveAttack(row, col) {
-    // Check if the attack is within the gameboard boundaries
-    if (row < 0 || col < 0 || row >= this.rows || col >= this.cols) {
-      throw new Error("Invalid attack coordinates.");
-    }
+  let valid;
 
-    // Check if the cell has been attacked before
-    if (this.grid[row][col] === "miss" || this.grid[row][col] === "hit") {
-      throw new Error("Already attacked this cell.");
-    }
+  if (isHorizontal) {
+    shipBlocks.every((_shipBlock, index) =>
+        (valid =
+          shipBlocks[0].id % width !==
+          width - (shipBlocks.length - (index + 1)))
+    );
+  } else {
+    shipBlocks.every(
+      (_shipBlock, index) =>
+        (valid = shipBlocks[0].id < 90 + (width * index + 1))
+    );
+  }
+  const notTaken = shipBlocks.every(
+    shipBlock => !shipBlock.classList.contains("taken")
+  );
 
-    // Check if there's a ship at the attacked coordinates
-    const ship = this.grid[row][col];
-    if (ship) {
-      // It's a hit
-      ship.hit();
-      this.grid[row][col] = "hit";
-    } else {
-      // It's a miss
-      this.grid[row][col] = "miss";
-    }
+  return {shipBlocks, valid, notTaken};
+}
+
+function addShipPiece(user, ship, startId) {
+  const allBoardBlocks = document.querySelectorAll(`#${user} div`);
+  let randomBoolean = Math.random() < 0.5;
+  let isHorizontal = user === "player" ? angle === 0 : randomBoolean;
+  let randomStartIndex = Math.floor(Math.random() * width * width);
+  // console.log(randomStartIndex);
+
+  let startIndex = startId ? startId : randomStartIndex;
+
+  const { shipBlocks, valid, notTaken } = getValidity(
+    allBoardBlocks,
+    isHorizontal,
+    startIndex,
+    ship
+  );
+
+  if (valid && notTaken) {
+    shipBlocks.forEach(shipBlock => {
+      shipBlock.classList.add(ship.name);
+      shipBlock.classList.add("taken");
+    });
+  } else {
+    if (user === "computer") addShipPiece(user, ship, startId);
+    if (user === "player") notDropped = true;
+  }
+}
+ships.forEach(ship => addShipPiece("computer", ship));
+
+// Drag and Drop logic!
+let draggedShip;
+const optionShips= Array.from(optionContainer.children);
+optionShips.forEach(optionShip =>
+  optionShip.addEventListener("dragstart", dragStart)
+);
+
+const allPlayerBlocks = document.querySelectorAll("#player div");
+allPlayerBlocks.forEach((PlayerBlock) => {
+  PlayerBlock.addEventListener("dragover", dragOver);
+  PlayerBlock.addEventListener("drop", dropShip);
+});
+
+function dragStart(e) {
+  // console.log(e.target);
+  notDropped = false;
+  draggedShip = e.target;
+}
+function dragOver(e) {
+  e.preventDefault();
+  const ship = ships[draggedShip.id];
+  highLightArea(e.target.id, ship);
+}
+
+function dropShip(e) {
+  const startId = e.target.id;
+  const ship = ships[draggedShip.id];
+  addShipPiece("player", ship, startId);
+  if (!notDropped) {
+    draggedShip.remove();
   }
 }
 
+// Add HighlightArea
 
-// Example usage:
-const gameboard = new Gameboard();
-gameboard.placeShip(carrier, 0, 0, "horizontal");
-gameboard.placeShip(battleship, 1, 2, "vertical");
+function highLightArea(startIndex, ship) {
+  const allBoardBlocks = document.querySelectorAll("#player div");
+  let isHorizontal = angle === 0;
 
-// Now you have a `Gameboard` class that can place ships on a grid.
+  const { shipBlocks, valid, notTaken } = getValidity(
+    allBoardBlocks,
+    isHorizontal,
+    startIndex,
+    ship
+  );
 
+  if (valid && notTaken) {
+    shipBlocks.forEach(shipBlock => {
+      shipBlock.classList.add("hover");
+      setTimeout(() => shipBlock.classList.remove("hover"), 500);
+    });
+  }
+}
 
+// Game Lo0p!
 
+let gameOver = false;
+let playerTurn;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// //!PHASE (This can be done later)
-
-// //?render the 10x10 grids on javascript with css modelling
-
-// function renderBoard () {
-
-//   const board = document.querySelector('.board')
-
-//   //create variables for creating the cell count
-//   const width= 10
-//   const height= 10
-//   const cellCount = width * height 
+//start game
+function startGame() {
+  if (playerTurn === undefined) {
+    if (optionContainer.children.length != 0) {
+      infoDisplay.textContent = "Please place all your pieces first!";
+    } else {
+      const allBoardBlocks = document.querySelectorAll("#computer div");
+      allBoardBlocks.forEach(block =>
+        block.addEventListener("click", handleClick)
+      );
+      playerTurn = true;
+      turnDisplay.textContent = "Your gO";
+      infoDisplay.textContent = "Game begins"; 
+    }
    
-//   //cell count renders the cells on the board with a for loop
+  }
+}
+startButton.addEventListener("click", startGame);
 
-//   for(let i = 0;i < cellCount; i++){
-//   const cell = document.createElement('div')
-//    cell.innerText = i
-//    board.appendChild(cell)
-   
-//   }
-// }
+let playerHits = [];
+let computerHits = [];
+const playerSunkShips = [];
+const computerSunkShips = [];
 
+function handleClick(e) {
+  if (!gameOver) {
+    if (e.target.classList.contains("taken")) {
+      e.target.classList.add("boom");
+      infoDisplay.textContent = "You hit the computers ship!";
+      let classes = Array.from(e.target.classList);
+      classes = classes.filter(className => className !== "block");
+      classes = classes.filter(className => className !== "boom");
+      classes = classes.filter(className => className !== "taken");
+      playerHits.push(...classes);
+      checkScore("player", playerHits, playerSunkShips);
+      console.log(playerHits);
+    }
+    if (!e.target.classList.contains("taken")) {
+      infoDisplay.textContent = "Nothing hit this time";
+      e.target.classList.add("empty");
+    }
+    playerTurn = false;
+    const allBoardBlocks = document.querySelectorAll("#computer div");
+    allBoardBlocks.forEach((block) => block.replaceWith(block.cloneNode(true)));
+    setTimeout(computerGo, 3000);
+  }
+}
+// Define the computers go
 
-//  window.addEventListener('DOMContentLoaded', renderBoard )
+function computerGo() {
+  if (!gameOver) {
+    turnDisplay.textContent = "computers go";
+    infoDisplay.textContent = "thinking...";
+
+    setTimeout(() => {
+      let randomGo = Math.floor(Math.random() * width * width);
+      const allBoardBlocks = document.querySelectorAll("#player div");
+
+      if (
+        allBoardBlocks[randomGo].classList.contains("taken") &&
+        allBoardBlocks[randomGo].classList.contains("boom")
+      ) {
+        computerGo();
+        return;
+      } else if (
+        allBoardBlocks[randomGo].classList.contains("taken") &&
+        !allBoardBlocks[randomGo].classList.contains("boom")
+      ) {
+        allBoardBlocks[randomGo].classList.add("boom");
+        infoDisplay.textContent = "computer hit";
+        let classes = Array.from(allBoardBlocks[randomGo].classList);
+        classes = classes.filter((className) => className !== "block");
+        classes = classes.filter((className) => className !== "boom");
+        classes = classes.filter((className) => className !== "taken");
+        computerHits.push(...classes);
+        checkScore("computer", computerHits, computerSunkShips);
+      } else {
+        infoDisplay.textContent = "no hit!";
+        allBoardBlocks[randomGo].classList.add("empty");
+      }
+    }, 3000);
+    setTimeout(() => {
+      playerTurn = true;
+      turnDisplay.textContent = "your go";
+      infoDisplay.textContent = "Please take your go";
+      const allBoardBlocks = document.querySelectorAll("#computer div");
+      allBoardBlocks.forEach(block =>
+        block.addEventListener("click", handleClick)
+      );
+    }, 6000);
+  }
+}
+
+function checkScore(user, userHits, userSunkShips) {
+  function checkShip(shipName, shipLength) {
+    if (
+      userHits.filter(storedShipName => storedShipName === shipName)
+        .length === shipLength
+    ) {
+      if (user === "player") {
+        infoDisplay.textContent = `you sunk the computer's ${shipName}`;
+        playerHits = userHits.filter(
+          storedShipName => storedShipName !== shipName
+          );
+        }
+        if (user === "computer") {
+        infoDisplay.textContent = ` the computer's sunk your ${shipName}`;
+        computerHits = userHits.filter(
+          (storedShipName) => storedShipName !== shipName
+        );
+      }
+      userSunkShips.push(shipName);
+    }
+  }
+  checkShip("destroyer", 2);
+  checkShip("submarine", 3);
+  checkShip("cruiser", 3);
+  checkShip("battleship", 4);
+  checkShip("carrier", 5);
+
+  if (playerSunkShips.length === 5) {
+    infoDisplay.textContent = "you sunk all ships !";
+    gameOver = true;
+  }
+  if (computerSunkShips.length === 5) {
+    infoDisplay.textContent = "The Machine prevails!";
+    gameOver = true;
+  }
+}
