@@ -36,8 +36,8 @@ function createBoard(color, user) {
 
   gamesBoardContainer.append(gameBoardContainer);
 }
-createBoard("yellow", "player");
-createBoard("pink", "computer");
+createBoard("lightblue", "player");
+createBoard("lightblue", "computer");
 
 // Ship
 
@@ -191,8 +191,8 @@ function startGame() {
         block.addEventListener("click", handleClick)
       );
       playerTurn = true;
-      turnDisplay.textContent = "Your gO";
-      infoDisplay.textContent = "Game begins"; 
+      turnDisplay.textContent = "Your Go";
+      infoDisplay.textContent = "The Game begins"; 
     }
    
   }
@@ -208,7 +208,7 @@ function handleClick(e) {
   if (!gameOver) {
     if (e.target.classList.contains("taken")) {
       e.target.classList.add("boom");
-      infoDisplay.textContent = "You hit the computers ship!";
+      infoDisplay.textContent = "You Hit A Ship!";
       let classes = Array.from(e.target.classList);
       classes = classes.filter(className => className !== "block");
       classes = classes.filter(className => className !== "boom");
@@ -218,7 +218,7 @@ function handleClick(e) {
       console.log(playerHits);
     }
     if (!e.target.classList.contains("taken")) {
-      infoDisplay.textContent = "Nothing hit this time";
+      infoDisplay.textContent = "Nothing Hit This Time";
       e.target.classList.add("empty");
     }
     playerTurn = false;
@@ -231,8 +231,8 @@ function handleClick(e) {
 
 function computerGo() {
   if (!gameOver) {
-    turnDisplay.textContent = "computers go";
-    infoDisplay.textContent = "thinking...";
+    turnDisplay.textContent = "Computers Go";
+    infoDisplay.textContent = "Thinking...";
 
     setTimeout(() => {
       let randomGo = Math.floor(Math.random() * width * width);
@@ -249,7 +249,7 @@ function computerGo() {
         !allBoardBlocks[randomGo].classList.contains("boom")
       ) {
         allBoardBlocks[randomGo].classList.add("boom");
-        infoDisplay.textContent = "computer hit";
+        infoDisplay.textContent = "Computer Hit";
         let classes = Array.from(allBoardBlocks[randomGo].classList);
         classes = classes.filter((className) => className !== "block");
         classes = classes.filter((className) => className !== "boom");
@@ -257,14 +257,14 @@ function computerGo() {
         computerHits.push(...classes);
         checkScore("computer", computerHits, computerSunkShips);
       } else {
-        infoDisplay.textContent = "no hit!";
+        infoDisplay.textContent = "No Hit!";
         allBoardBlocks[randomGo].classList.add("empty");
       }
     }, 3000);
     setTimeout(() => {
       playerTurn = true;
-      turnDisplay.textContent = "your go";
-      infoDisplay.textContent = "Please take your go";
+      turnDisplay.textContent = "Your Turn";
+      infoDisplay.textContent = "Please Take Your Go";
       const allBoardBlocks = document.querySelectorAll("#computer div");
       allBoardBlocks.forEach(block =>
         block.addEventListener("click", handleClick)
@@ -301,7 +301,7 @@ function checkScore(user, userHits, userSunkShips) {
   checkShip("carrier", 5);
 
   if (playerSunkShips.length === 5) {
-    infoDisplay.textContent = "you sunk all ships !";
+    infoDisplay.textContent = "You Have Won !";
     gameOver = true;
   }
   if (computerSunkShips.length === 5) {
